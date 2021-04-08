@@ -1,0 +1,10 @@
+.app {
+  background-color: #282c34;
+  color: white;
+  min-height: 100vh;
+}
+.app-header {
+  padding: 10px;
+  text-align: center;
+  border-bottom: 1px solid #eee;
+}
