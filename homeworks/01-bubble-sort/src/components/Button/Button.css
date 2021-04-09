@@ -1,0 +1,19 @@
+.button {
+  background: #1492d9;
+  color: white;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  padding: 10px 12px;
+}
+.button:hover {
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+.button:active {
+  background: #053447;
+}
+
+.button:disabled {
+  opacity: 0.6;
+}

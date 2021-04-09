@@ -1,0 +1,11 @@
+.algorithm-selector {
+  padding: 10px 12px;
+  color: white;
+  background: #1492d9;
+  border: white;
+  border-radius: 4px;
+}
+
+.algorithm-selector:disabled {
+  opacity: 0.5;
+}

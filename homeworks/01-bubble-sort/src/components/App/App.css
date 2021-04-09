@@ -2,9 +2,27 @@
   background-color: #282c34;
   color: white;
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
+
 .app-header {
   padding: 10px;
   text-align: center;
   border-bottom: 1px solid #eee;
 }
+
+.app-main {
+  flex: 1;
+  margin: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.app-footer {
+  flex: 0;
+  padding: 20px;
+  border-top: 1px solid #eee;
+}
+
