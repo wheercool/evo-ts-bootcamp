@@ -1,0 +1,16 @@
+.app {
+  margin: 10px;
+}
+
+.app__searchForm {
+  width: 80%;
+  margin-bottom: 15px;
+}
+
+.app__queryField {
+  width: 50%;
+  padding: 10px;
+}
+.app__searchButton {
+  padding: 10px;
+}
