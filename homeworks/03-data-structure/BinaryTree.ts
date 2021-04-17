@@ -36,9 +36,23 @@ export class BinaryTree<T> implements IBinaryTree<T> {
     }
   }
 
-  // getColumn(columnOrder: number): T[] {
-  //   return [];
-  // }
+  getColumn(columnOrder: number): T[] {
+    const q: [tree: IBinaryTree<T>, order: number][] = [[this.tree, 0]];
+    const result: T[] = [];
+    while (q.length) {
+      const [next, order] = q.shift()!;
+      if (order === columnOrder) {
+       result.push(next.value);
+      }
+      if (next.left) {
+        q.push([next.left, order - 1]);
+      }
+      if (next.right) {
+        q.push([next.right, order + 1]);
+      }
+    }
+    return result;
+  }
 
   private inOrderTraverse(tree: IBinaryTree<T>): T[] {
     const leftValues = tree.left ? this.inOrderTraverse(tree.left) : [];
