@@ -42,7 +42,7 @@ export class BinaryTree<T> implements IBinaryTree<T> {
     while (q.length) {
       const [next, order] = q.shift()!;
       if (order === columnOrder) {
-       result.push(next.value);
+        result.push(next.value);
       }
       if (next.left) {
         q.push([next.left, order - 1]);
@@ -52,6 +52,10 @@ export class BinaryTree<T> implements IBinaryTree<T> {
       }
     }
     return result;
+  }
+
+  setTree(tree: IBinaryTree<T>) {
+    this.tree = tree;
   }
 
   private inOrderTraverse(tree: IBinaryTree<T>): T[] {
