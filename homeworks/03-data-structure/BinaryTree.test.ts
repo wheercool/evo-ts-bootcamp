@@ -28,6 +28,16 @@ describe('BinaryTree', () => {
     })
 
   })
+  describe('setTree', () => {
+    it('should replace inner tree', () => {
+      const tree = new BinaryTree({ value: 10 });
+      const newTree = { value: 42, left: { value: 1 }, right: { value: 2 } }
+      tree.setTree(newTree);
+      expect(tree.value).toEqual(newTree.value);
+      expect(tree.left).toEqual(newTree.left);
+      expect(tree.right).toEqual(newTree.right);
+    })
+  })
   describe('traverse', () => {
     let tree: BinaryTree<number>;
     let oneElementTree: BinaryTree<number>;
