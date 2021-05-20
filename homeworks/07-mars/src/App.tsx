@@ -1,24 +1,32 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { MarsPhotosService } from './services/MarsPhotosService';
+import style from './App.module.css';
+
+import { CameraList } from './components/CameraList/CameraList';
+import { Sol } from './components/Sol/Sol';
+import { ImageList } from './components/ImageList/ImageList';
+import { CameraName } from './types';
+import { RoverList } from './components/RoverList/RoverList';
+import { useDispatch, useSelector } from 'react-redux';
+import { changeSol, fetchImages, getActiveSol } from './features/images/imagesSlice';
+import { ViewSwitch } from './components/ViewSwitch/ViewSwitch';
+
+async function run() {
+  const service = new MarsPhotosService();
+  const data = await service.getPhotos('Curiosity')
+  console.log(data);
+}
+
+run();
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className={style.app}>
+      <header>Mars Viewer</header>
+      <main>
+        <ViewSwitch/>
+
+      </main>
     </div>
   );
 }
