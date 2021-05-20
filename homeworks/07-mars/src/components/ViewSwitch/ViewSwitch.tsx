@@ -23,9 +23,11 @@ export function ViewSwitch() {
     ? <ImagesView/>
     : <FavoritesView/>
   return <div className={style.switchContainer}>
-    <button className={classNames(style.switchBtn, { [style.switchBtnActive]: view === View.Images })} onClick={goToImages}>Images</button>
-    <button className={classNames(style.switchBtn, { [style.switchBtnActive]: view === View.Favorites })} onClick={goToFavorites}>Favorites
-      ({totalFavorites})
+    <button className={classNames(style.switchBtn, { [style.switchBtnActive]: view === View.Images })}
+            onClick={goToImages}>Images
+    </button>
+    <button className={classNames(style.switchBtn, { [style.switchBtnActive]: view === View.Favorites })}
+            onClick={goToFavorites}>Favorites ({totalFavorites})
     </button>
     <div>
       {ViewComponent}

@@ -21,6 +21,6 @@ export function ImageList(props: ImageList) {
             image.favorite ? '-' : '+'
           }</button>
         </div>))
-    })
+    }
   </div>;
 }
