@@ -1,25 +1,25 @@
-import { animationFrameScheduler, fromEvent, interval } from 'rxjs';
+import { fromEvent, interval } from 'rxjs';
 import { map, mapTo, startWith, withLatestFrom } from 'rxjs/operators';
+import { Point2D } from './types';
 
 export const mouse$ = fromEvent(document, 'mousemove').pipe(map(event => {
   const mouseEvent = event as MouseEvent;
-  return [mouseEvent.x, mouseEvent.y];
-}), startWith([0, 0]));
+  return [mouseEvent.pageX, mouseEvent.pageY] as Point2D;
+}), startWith([0, 0] as Point2D));
 
 export const click$ = fromEvent(document, 'click').pipe(mapTo(true), startWith(false));
 
 export const shootAt$ = click$.pipe(
   withLatestFrom(mouse$),
   map(([_, xy]) => xy)
-)
-const WIDTH = 1000;
-const HEIGHT = 1000;
+);
 
-export const targetPosition$ = interval(2000).pipe(map(() => randomPosition(WIDTH, HEIGHT)))
+const positions: Point2D[] = [[0.25, 0.33], [0.25, 0.66], [0.5, 0.33], [0.5, 0.66], [0.75, 0.33], [0.75, 0.66]];
+export const targetPosition$ = interval(1000).pipe(map(() => randomPosition()))
 
-export const loop$ = interval(0, animationFrameScheduler);
 export const game$ = targetPosition$;
 
-function randomPosition(width: number, height: number): [number, number] {
-  return [Math.floor(Math.random() * width), Math.floor(Math.random() * height)];
+function randomPosition(): Point2D {
+  const rnd = Math.floor(Math.random() * positions.length);
+  return positions[rnd];
 }

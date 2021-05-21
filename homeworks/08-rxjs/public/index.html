@@ -1,20 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
+<head>
+    <meta charset="utf-8"/>
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="theme-color" content="#000000"/>
     <meta
-      name="description"
-      content="Web site created using create-react-app"
+            name="description"
+            content="Web site created using create-react-app"
     />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png"/>
     <!--
       manifest.json provides metadata used when your web app is installed on a
       user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
     -->
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json"/>
     <!--
       Notice the use of %PUBLIC_URL% in the tags above.
       It will be replaced with the URL of the `public` folder during the build.
@@ -25,19 +25,112 @@
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
     <title>React App</title>
-  </head>
-  <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
+</head>
+<body>
+<noscript>You need to enable JavaScript to run this app.</noscript>
+<script id="vertexShader" type="x-shader/x-vertex">
+        void main() {
+            gl_Position = vec4( position, 1.0 );
+        }
 
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
 
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
-  </body>
+</script>
+<script id="fragmentShader" type="x-shader/x-fragment">
+        uniform vec2 u_resolution;
+        uniform float u_time;
+        uniform vec2 u_mouse;
+        uniform vec2 u_target;
+
+        float plot(vec2 st, float pct){
+          return  smoothstep( pct-0.02, pct, st.y) -
+                  smoothstep( pct, pct+0.02, st.y);
+        }
+
+        float circle(vec2 st, vec2 c, float radius) {
+            float factor = u_resolution.y / u_resolution.x;
+
+            vec2 p = (st.xy - c) * vec2(1.0, factor);
+            return 1.0 - smoothstep(radius, radius + 0.001, length(p));
+        }
+
+
+
+        float hLine(vec2 st, vec2 center, float thickness, float size) {
+            vec2 p = st - center;
+            if (abs(p.x) > size) {
+                return 0.0;
+            }
+            return 1.0 - smoothstep(thickness, thickness + 0.001, abs(p.y));
+        }
+
+        float vLine(vec2 st, vec2 center, float thickness, float size) {
+            vec2 p = center - st;
+            float s = size / ( u_resolution.y / u_resolution.x);
+            if (abs(p.y) > s) {
+                return 0.0;
+            }
+            return 1.0 - smoothstep(thickness, thickness + 0.001, abs(p.x));
+        }
+
+        vec3 paint(vec3 bgColor, float figure, vec3 color) {
+            return bgColor * (1.0 - figure) + color * figure;
+        }
+
+        float absolute(float v) {
+           return v / u_resolution.x;
+        }
+
+        void main() {
+            vec2 st = gl_FragCoord.xy/u_resolution.xy;
+            vec2 mouse = u_mouse.xy/u_resolution.xy;
+            vec2 p = vec2(st.x - mouse.x);
+            vec2 q = vec2(1.0 - st.y - mouse.y);
+            vec3 bgColor = vec3(0.8, 0.2, 0.3);;
+            vec3 color = bgColor;
+
+            /* cat */
+            vec3 catColor = vec3(0.0, 0.0, 1.0);
+            vec2 pos = u_target.xy;
+            float r = absolute(24.0);
+            float figure = circle(st, pos, r);
+            color = paint(color, figure, catColor);
+
+            pos = mouse.xy;
+            pos.y = 1.0 - pos.y;
+
+            /* target */
+
+            r = absolute(20.0);
+            figure = circle(st, pos, r);
+            vec3 c = vec3(0.0, 1.0, 0.0);
+            vec3 restore = color;
+            color = paint(color, figure, c);
+            r = absolute(18.0);
+            figure = circle(st, pos, r);
+            color = paint(color, figure, restore);
+
+            figure = vLine(st, pos, absolute(0.5), absolute(25.0));
+            color = paint(color, figure, c);
+
+            figure = hLine(st, pos, absolute(2.0), absolute(25.0));
+            color = paint(color, figure, c);
+
+            gl_FragColor=vec4(color,1.0);
+        }
+
+
+</script>
+<div id="container"></div>
+<div id="root"></div>
+<!--
+  This HTML file is a template.
+  If you open it directly in the browser, you will see an empty page.
+
+  You can add webfonts, meta tags, or analytics to this file.
+  The build step will place the bundled scripts into the <body> tag.
+
+  To begin the development, run `npm start` or `yarn start`.
+  To create a production bundle, use `npm run build` or `yarn build`.
+-->
+</body>
 </html>

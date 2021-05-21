@@ -1,0 +1,82 @@
+import { tap } from 'rxjs/operators';
+import * as THREE from 'three';
+import { mouse$, shootAt$, targetPosition$ } from './pipes';
+
+let camera: THREE.Camera, scene: THREE.Scene, renderer: THREE.WebGLRenderer;
+let uniforms: any;
+
+init();
+animate();
+
+function init() {
+  const container = document.getElementById('container')!;
+
+  camera = new THREE.Camera();
+  camera.position.z = 1;
+
+  scene = new THREE.Scene();
+
+  var geometry = new THREE.PlaneBufferGeometry(2, 2);
+
+  uniforms = {
+    u_time: { type: 'f', value: 1.0 },
+    u_resolution: { type: 'v2', value: new THREE.Vector2() },
+    u_mouse: { type: 'v2', value: new THREE.Vector3() },
+    u_target: { type: 'v2', value: new THREE.Vector2(0.5, 0.5) }
+  };
+
+  mouse$.pipe(
+    tap(([x, y]) => {
+      uniforms.u_mouse.value.setX(x);
+      uniforms.u_mouse.value.setY(y);
+    })
+  ).subscribe()
+
+
+  shootAt$.pipe(
+    tap(() => {
+      uniforms.u_mouse.value.setZ(1.0);
+    })
+  ).subscribe()
+
+  targetPosition$.pipe(
+    tap(([x, y]) => {
+      uniforms.u_target.value.setX(x);
+      uniforms.u_target.value.setY(y);
+      console.log({x, y})
+    })
+  ).subscribe()
+
+  var material = new THREE.ShaderMaterial({
+    uniforms: uniforms,
+    vertexShader: document.getElementById('vertexShader')!.textContent!,
+    fragmentShader: document.getElementById('fragmentShader')!.textContent!
+  });
+
+  var mesh = new THREE.Mesh(geometry, material);
+  scene.add(mesh);
+
+  renderer = new THREE.WebGLRenderer();
+  renderer.setPixelRatio(window.devicePixelRatio);
+
+  container.appendChild(renderer.domElement);
+
+  onWindowResize();
+  window.addEventListener('resize', onWindowResize, false);
+}
+
+function onWindowResize() {
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  uniforms.u_resolution.value.x = renderer.domElement.width;
+  uniforms.u_resolution.value.y = renderer.domElement.height;
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+  render();
+}
+
+function render() {
+  uniforms.u_time.value += 0.05;
+  renderer.render(scene, camera);
+}

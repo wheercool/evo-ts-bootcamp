@@ -1,40 +1,26 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { useEffect, useState } from 'react';
 import './App.css';
-import { game$, mouse$ } from './pipes';
+import { mouse$, targetPosition$ } from './pipes';
 import { tap } from 'rxjs/operators';
-
-// mouse$
-//   .pipe(
-//     tap(v => console.log(v))
-//   )
-//   .subscribe();
-
-game$
-  .pipe(
-    tap(v => console.log(v))
-  )
-  .subscribe();
+import { Point2D } from './types';
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo"/>
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+  return null;
+  // const [position, changePosition] = useState([0, 0]);
+  // const [mousePosition, changeMousePosition] = useState([0, 0] as Point2D);
+  // useEffect(() => {
+  //   targetPosition$.pipe(
+  //     tap(changePosition),
+  //     tap(console.log)
+  //   ).subscribe();
+  //   mouse$.pipe(tap(changeMousePosition)).subscribe();
+  // }, [])
+  // return (
+  //   <div>
+  //     <div style={{ transform: `translate(${position[0]}px, ${position[1]}px)`, }}>Target</div>
+  //     <div style={{ transform: `translate(${mousePosition[0]}px, ${mousePosition[1]}px)`, }}>x</div>
+  //   </div>
+  // );
 }
 
 export default App;
