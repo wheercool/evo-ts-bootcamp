@@ -46,6 +46,8 @@
         uniform bool u_smile_visible;
         uniform bool u_shoot;
         uniform bool u_killed_smile;
+        uniform float u_recharged_at;
+        uniform float u_recharge_time;
 
         float PI = 3.14;
         float plot(vec2 st, float pct){
@@ -207,6 +209,15 @@
 
             figure = hLine(st, pos, absoluteY(1.0), absolute(25.0));
             color = paint(color, figure, c);
+
+	    float delay = u_recharged_at - u_time;
+	    float len = absolute(30.0);
+	    len = delay * len / u_recharge_time;
+
+	    
+	    figure = hLine(st, pos - vec2(0.0, absoluteY(33.0)), absoluteY(3.0), len);
+	    color = paint(color, figure, vec3(0.8, 0.8, 0.8));
+
             gl_FragColor=vec4(color,1.0);
         }
 

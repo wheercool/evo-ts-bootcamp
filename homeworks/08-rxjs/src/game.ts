@@ -1,11 +1,11 @@
-import { merge, defer, combineLatest, concat, empty, fromEvent, of } from 'rxjs';
+import { Subscription, merge, defer, combineLatest, concat, empty, fromEvent, of } from 'rxjs';
 import { throttleTime, share, buffer, delay, filter, map, mapTo, repeat, scan, startWith, tap, withLatestFrom } from 'rxjs/operators';
 import { createPoint2D, createSmile, changeSmileVisible, generateSmileType, hideSmile, killedSmile, randomPosition } from './model';
 import { Renderer } from './Renderer';
 import { Smile, SmileType } from './types';
 
 const SMILE_RADIUS = 24;
-const SMILE_SHOW_TIME = 1500;
+const SMILE_SHOW_TIME = 1000;
 const SMILE_HIDDEN_TIME = 2000;
 const RECHARGE_TIME = 3000;
 const LIVES = 3;
@@ -13,7 +13,7 @@ const LIVES = 3;
 const generateSmile = () => createSmile(randomPosition(), generateSmileType(), false);
 
 export function run() {
-  const render = new Renderer(LIVES);
+  const render = new Renderer(LIVES, RECHARGE_TIME);
 
   const mouse$ = fromEvent(document, 'mousemove')
     .pipe(
@@ -31,9 +31,10 @@ export function run() {
       throttleTime(RECHARGE_TIME)
     );
 
+
   const smileVisible$ = concat(
-    of(false).pipe(delay(SMILE_HIDDEN_TIME)),
-    of(true).pipe(delay(SMILE_SHOW_TIME)),
+    of(false).pipe(delay(SMILE_SHOW_TIME)),
+    of(true).pipe(delay(SMILE_HIDDEN_TIME)),
   ).pipe(
     repeat(Infinity)
   );
@@ -102,15 +103,21 @@ export function run() {
     killedSmile$
   );
 
+  let gameSubscription: Subscription;
+
   const game$ = combineLatest(scores$, smile$, smileDead$, lives$)
     .pipe(tap(([scores, smile, smileDead, lives]) => {
-      console.log('Smile dead', smileDead);
       render.updateSmileDead(smileDead);
       render.updateScores(scores);
       render.updateSmile(smile);
       render.updateLives(lives);
-    }))
-    .subscribe();
+      if (lives <= 0) {
+      	render.gameOver();
+	gameSubscription.unsubscribe();
+      }
+    }));
+
+  gameSubscription = game$.subscribe();
 
   render.animate();
 }
