@@ -42,6 +42,13 @@ export function hideSmile(smile: Smile): Smile {
   }
 }
 
+export function changeSmileVisible(smile: Smile, visible: boolean): Smile {
+  return {
+    ...smile,
+    visible
+  }
+}
+
 export function generateSmileType(): SmileType {
   const value = Math.random();
   return (value > 0.5)

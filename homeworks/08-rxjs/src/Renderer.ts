@@ -8,6 +8,7 @@ export class Renderer {
   private readonly renderer: THREE.WebGLRenderer;
   private readonly uniforms: any;
   private readonly message: Text;
+  private readonly text: Text;
 
   constructor() {
     const container = document.getElementById('container')!;
@@ -18,6 +19,7 @@ export class Renderer {
 
     const geometry = new THREE.PlaneBufferGeometry(2, 2);
     this.message = new Text();
+    this.text = new Text();
     this.message.text = 'Hello';
     this.message.font = './fonts/atma-v8-latin-regular.woff';
     this.message.fontSize = 0.05;
@@ -45,6 +47,7 @@ export class Renderer {
     const mesh = new THREE.Mesh(geometry, material);
     this.scene.add(mesh);
     this.message.sync();
+    this.text.sync();
     this.scene.add(this.message);
 
     this.renderer = new THREE.WebGLRenderer();
@@ -99,6 +102,9 @@ export class Renderer {
   updateLives(lives: number) {
     this.uniforms.u_lives.value = lives;
     this.message.text = `Lives: ${lives}`;
+  }
+  updateText(message: string) {
+    this.text.text = message; 
   }
 }
 
