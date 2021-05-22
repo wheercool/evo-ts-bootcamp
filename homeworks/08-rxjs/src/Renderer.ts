@@ -8,9 +8,9 @@ export class Renderer {
   private readonly renderer: THREE.WebGLRenderer;
   private readonly uniforms: any;
   private readonly message: Text;
-  private readonly text: Text;
+  private readonly scores: Text;
 
-  constructor() {
+  constructor(lives: number) {
     const container = document.getElementById('container')!;
     this.camera = new THREE.Camera();
     this.camera.position.z = 1;
@@ -19,12 +19,18 @@ export class Renderer {
 
     const geometry = new THREE.PlaneBufferGeometry(2, 2);
     this.message = new Text();
-    this.text = new Text();
+
+    this.scores = new Text();
+    this.scores.fontSize = 0.05;
+    this.scores.position.setY(0.98);
+    this.scores.font = './fonts/atma-v8-latin-regular.woff';
+
+
     this.message.text = 'Hello';
     this.message.font = './fonts/atma-v8-latin-regular.woff';
     this.message.fontSize = 0.05;
-    this.message.letterSpacing = 0;
-    this.message.position.setY(0.95);
+    this.message.position.setY(0.98);
+    this.message.position.setX(0.5);
 
     this.uniforms = {
       u_time: { type: 'f', value: 1.0 },
@@ -34,8 +40,8 @@ export class Renderer {
       u_happy: { type: 'f', value: 1.0 },
       u_smile_visible: { type: 'b', value: false },
       u_killed_smile: { type: 'b', value: false },
-      u_shot: { type: 'b', value: false },
-      u_lives: { type: 'n', value: 10 }
+      u_shoot: { type: 'b', value: false },
+      u_lives: { type: 'n', value: lives }
     };
     this.updateLives(this.uniforms.u_lives.value);
     const material = new THREE.ShaderMaterial({
@@ -47,8 +53,9 @@ export class Renderer {
     const mesh = new THREE.Mesh(geometry, material);
     this.scene.add(mesh);
     this.message.sync();
-    this.text.sync();
+    this.scores.sync();
     this.scene.add(this.message);
+    this.scene.add(this.scores);
 
     this.renderer = new THREE.WebGLRenderer();
     this.renderer.setPixelRatio(window.devicePixelRatio);
@@ -69,7 +76,7 @@ export class Renderer {
   render() {
     this.uniforms.u_time.value += 0.05;
     this.renderer.render(this.scene, this.camera);
-    this.uniforms.u_shot.value = false;
+    this.uniforms.u_shoot.value = false;
   }
 
   animate = () => {
@@ -94,17 +101,20 @@ export class Renderer {
     alert('Game Over');
   }
 
-  hitSmile(killed: boolean) {
-    this.uniforms.u_shot.value = true;
-    this.uniforms.u_killed_smile = killed;
+  updateShoot() {
+    this.uniforms.u_shoot.value = true;
+  }
+
+  updateSmileDead(killed: boolean) {
+    this.uniforms.u_killed_smile.value = killed;
   }
 
   updateLives(lives: number) {
     this.uniforms.u_lives.value = lives;
-    this.message.text = `Lives: ${lives}`;
+    this.message.text = `Lives: `;
   }
-  updateText(message: string) {
-    this.text.text = message; 
+  updateScores(scores: number) {
+    this.scores.text = `Scores: ${scores.toString()}`; 
   }
 }
 

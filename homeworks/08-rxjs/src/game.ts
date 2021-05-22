@@ -1,5 +1,5 @@
 import { merge, defer, combineLatest, concat, empty, fromEvent, of } from 'rxjs';
-import { share, buffer, delay, filter, map, mapTo, repeat, scan, startWith, tap, withLatestFrom } from 'rxjs/operators';
+import { throttleTime, share, buffer, delay, filter, map, mapTo, repeat, scan, startWith, tap, withLatestFrom } from 'rxjs/operators';
 import { createPoint2D, createSmile, changeSmileVisible, generateSmileType, hideSmile, killedSmile, randomPosition } from './model';
 import { Renderer } from './Renderer';
 import { Smile, SmileType } from './types';
@@ -7,12 +7,13 @@ import { Smile, SmileType } from './types';
 const SMILE_RADIUS = 24;
 const SMILE_SHOW_TIME = 1500;
 const SMILE_HIDDEN_TIME = 2000;
-const LIVES = 10;
+const RECHARGE_TIME = 3000;
+const LIVES = 3;
 
 const generateSmile = () => createSmile(randomPosition(), generateSmileType(), false);
 
 export function run() {
-  const render = new Renderer();
+  const render = new Renderer(LIVES);
 
   const mouse$ = fromEvent(document, 'mousemove')
     .pipe(
@@ -26,7 +27,8 @@ export function run() {
 
   const click$ = fromEvent(document, 'click')
     .pipe(
-      mapTo(true)
+      mapTo(true),
+      throttleTime(RECHARGE_TIME)
     );
 
   const smileVisible$ = concat(
@@ -37,7 +39,7 @@ export function run() {
   );
 
   const round$ = smileVisible$.pipe(
-    scan((round, visible) => round + Number(visible), 0),
+    scan((round, visible) => round + Number(visible), 0)
   );
   
   const smile$ = smileVisible$
@@ -51,7 +53,8 @@ export function run() {
 
   const shootAt$ = click$.pipe(
     withLatestFrom(mouse$),
-    map(([_, xy]) => xy)
+    map(([_, xy]) => xy),
+    tap(() => render.updateShoot())
   );
 
   const killedSmile$ = shootAt$.pipe(
@@ -67,10 +70,16 @@ export function run() {
     filter(Boolean),
   );
 
+
   const killedSadSmile$ = shootAt$.pipe(
     withLatestFrom(smile$),
     map(([shootAt, smile]) => killedSmile(smile, shootAt, SMILE_RADIUS) && smile.type === SmileType.Unhappy),
     filter(Boolean),
+  );
+
+  const scores$ = killedSadSmile$.pipe(
+    scan((score) => score + 1, 0),
+    startWith(0)
   );
 
   const sadSmiles$ = smile$.pipe(
@@ -88,8 +97,16 @@ export function run() {
     startWith(LIVES),
   );
 
-  const game$ = combineLatest(round$, smile$, killedSmile$, lives$)
-    .pipe(tap(([round, smile, killedSmile, lives]) => {
+  const smileDead$ = merge(
+    smile$.pipe(mapTo(false)),
+    killedSmile$
+  );
+
+  const game$ = combineLatest(scores$, smile$, smileDead$, lives$)
+    .pipe(tap(([scores, smile, smileDead, lives]) => {
+      console.log('Smile dead', smileDead);
+      render.updateSmileDead(smileDead);
+      render.updateScores(scores);
       render.updateSmile(smile);
       render.updateLives(lives);
     }))
