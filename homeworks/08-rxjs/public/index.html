@@ -34,13 +34,20 @@
         }
 
 
+
 </script>
 <script id="fragmentShader" type="x-shader/x-fragment">
         uniform vec2 u_resolution;
         uniform float u_time;
         uniform vec2 u_mouse;
         uniform vec2 u_target;
+        uniform int u_lives;
+        uniform bool u_happy;
+        uniform bool u_smile_visible;
+        uniform bool u_shot;
+        uniform bool u_killed_smile;
 
+        float PI = 3.14;
         float plot(vec2 st, float pct){
           return  smoothstep( pct-0.02, pct, st.y) -
                   smoothstep( pct, pct+0.02, st.y);
@@ -53,8 +60,6 @@
             return 1.0 - smoothstep(radius, radius + 0.001, length(p));
         }
 
-
-
         float hLine(vec2 st, vec2 center, float thickness, float size) {
             vec2 p = st - center;
             if (abs(p.x) > size) {
@@ -65,21 +70,81 @@
 
         float vLine(vec2 st, vec2 center, float thickness, float size) {
             vec2 p = center - st;
-            float s = size / ( u_resolution.y / u_resolution.x);
-            if (abs(p.y) > s) {
+            if (abs(p.y) > size) {
                 return 0.0;
             }
             return 1.0 - smoothstep(thickness, thickness + 0.001, abs(p.x));
-        }
-
-        vec3 paint(vec3 bgColor, float figure, vec3 color) {
-            return bgColor * (1.0 - figure) + color * figure;
         }
 
         float absolute(float v) {
            return v / u_resolution.x;
         }
 
+        float arc(vec2 st, vec2 center, float r, vec2 angle) {
+            vec2 p = st - center;
+            float d = length(p);
+            float a = atan(p.y, p.x) + PI;
+            float r2 = r - absolute(2.0);
+            float c1 = circle(st, center, r);
+            float c2 = circle(st, center, r2);
+            float v = c1 - c1 * c2;
+            if (a > angle.x && a < angle.y) {
+                return v;
+            } else {
+                return 0.0;
+            }
+        }
+
+        vec3 paint(vec3 bgColor, float figure, vec3 color) {
+            return bgColor * (1.0 - figure) + color * figure;
+        }
+
+        float absoluteY(float v) {
+          return v / u_resolution.y;
+        }
+
+        vec3 smile(vec2 st, vec3 color, bool isHappy) {
+            vec3 catColor = vec3(1.0, 1.0, 0.3);
+            vec2 pos = u_target.xy / u_resolution.xy;
+            pos.y = 1.0 - pos.y;
+            float r = absolute(24.0);
+            float figure = circle(st, pos, r);
+            color = paint(color, figure, catColor);
+
+            float shiftX = absolute(10.0);
+            float shiftY = absoluteY(-10.0);
+            figure = circle(st, pos - vec2(shiftX, shiftY), absolute(4.0));
+            color = paint(color, figure, vec3(0.0, 0.0, 0.0));
+
+            figure = circle(st, pos - vec2(-shiftX, shiftY), absolute(4.0));
+            color = paint(color, figure, vec3(0.0, 0.0, 0.0));
+
+            if (isHappy) {
+                vec2 happy = vec2(0.0, PI);
+                figure = arc(st, pos - vec2(0.0, absoluteY(2.0)), absolute(12.0), happy);
+            } else {
+                vec2 unhappy = vec2(PI, 2.0 * PI);
+                figure = arc(st, pos - vec2(0.0, absoluteY(12.0)), absolute(10.0), unhappy);
+            }
+            color = paint(color, figure, vec3(1.0, 0.0, 0.0));
+            return color;
+        }
+
+
+        vec3 lives(vec2 st, vec3 color) {
+           vec3 c = vec3(1.0, 0.0, 0.0);
+           float r = absolute(10.0);
+           float top = 1.0 - absoluteY(20.0) - r;
+           float right = 1.0 - absolute(20.0) - r;
+           int n = 0;
+           while(n++ < u_lives) {
+            vec2 pos = vec2(right, top);
+            float figure  = circle(st, pos, r);
+            color = paint(color, figure, c);
+            right -= r * 2.5;
+           }
+           return color;
+        }
         void main() {
             vec2 st = gl_FragCoord.xy/u_resolution.xy;
             vec2 mouse = u_mouse.xy/u_resolution.xy;
@@ -88,15 +153,19 @@
             vec3 bgColor = vec3(0.8, 0.2, 0.3);;
             vec3 color = bgColor;
 
-            /* cat */
-            vec3 catColor = vec3(0.0, 0.0, 1.0);
-            vec2 pos = u_target.xy;
-            float r = absolute(24.0);
-            float figure = circle(st, pos, r);
-            color = paint(color, figure, catColor);
+            float r = 0.0;
+            float figure = 0.0;
+            vec2 pos = vec2(0.0);
+
+            /* smile */
+            if (u_smile_visible) {
+                color = smile(st, color, u_happy);
+            }
 
             pos = mouse.xy;
             pos.y = 1.0 - pos.y;
+
+            color = lives(st, color);
 
             /* target */
 
@@ -109,14 +178,18 @@
             figure = circle(st, pos, r);
             color = paint(color, figure, restore);
 
-            figure = vLine(st, pos, absolute(0.5), absolute(25.0));
+            figure = vLine(st, pos, absolute(0.5), absoluteY(25.0));
             color = paint(color, figure, c);
 
-            figure = hLine(st, pos, absolute(2.0), absolute(25.0));
+            figure = hLine(st, pos, absoluteY(1.0), absolute(25.0));
             color = paint(color, figure, c);
 
+            if (u_shot) {
+               color = vec3(0.0); //vec3(0.0, color.g, 0.0);
+            }
             gl_FragColor=vec4(color,1.0);
         }
+
 
 
 </script>

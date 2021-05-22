@@ -1,14 +1,50 @@
-import { Point2D } from './types';
+import { Point2D, Smile, SmileType } from './types';
 
-const boundingR = 20;
+export function createPoint2D(x: number, y: number): Point2D {
+  return [x, y];
+}
 
 export function minus(a: Point2D, b: Point2D): Point2D {
   return [a[0] - b[0], a[1] - b[1]];
 }
+
+export function mul(a: Point2D, b: Point2D): Point2D {
+  return [a[0] * b[0], a[1] * b[1]];
+}
+
 export function length(a: Point2D): number {
   return Math.sqrt(a[0] * a[0] + a[1] * a[1]);
 }
 
-export function isTargetHit(targetPosition: Point2D, hitAt: Point2D) {
-  return length(minus(hitAt, targetPosition)) <= boundingR;
+export function killedSmile(smile: Smile, hitAt: Point2D, radius: number) {
+  return smile.visible && length(minus(hitAt, smile.position)) <= radius;
+}
+
+const positions: Point2D[] = [[0.25, 0.33], [0.25, 0.66], [0.5, 0.33], [0.5, 0.66], [0.75, 0.33], [0.75, 0.66]];
+
+export function randomPosition(): Point2D {
+  const rnd = Math.floor(Math.random() * positions.length);
+  return mul(positions[rnd], createPoint2D(window.innerWidth, window.innerHeight));
+}
+
+export function createSmile(position: Point2D, type: SmileType, visible: boolean): Smile {
+  return {
+    position,
+    type,
+    visible
+  }
+}
+
+export function hideSmile(smile: Smile): Smile {
+  return {
+    ...smile,
+    visible: false
+  }
+}
+
+export function generateSmileType(): SmileType {
+  const value = Math.random();
+  return (value > 0.5)
+    ? SmileType.Happy
+    : SmileType.Unhappy;
 }
