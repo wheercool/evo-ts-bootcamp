@@ -1,4 +1,4 @@
-import { defer, combineLatest, concat, empty, fromEvent, of } from 'rxjs';
+import { merge, defer, combineLatest, concat, empty, fromEvent, of } from 'rxjs';
 import { share, buffer, delay, filter, map, mapTo, repeat, scan, startWith, tap, withLatestFrom } from 'rxjs/operators';
 import { createPoint2D, createSmile, changeSmileVisible, generateSmileType, hideSmile, killedSmile, randomPosition } from './model';
 import { Renderer } from './Renderer';
@@ -37,18 +37,16 @@ export function run() {
   );
 
   const round$ = smileVisible$.pipe(
-    scan((acc, next) => acc + Number(next), 0),
-    tap(round => render.updateLives(round))
+    scan((round, visible) => round + Number(visible), 0),
   );
   
   const smile$ = smileVisible$
     .pipe(
-      scan((acc, visible) => {
-        const smile = visible ? generateSmile() : acc;
+      scan((prevSmile, visible) => {
+        const smile = visible ? generateSmile() : prevSmile;
         return changeSmileVisible(smile, visible);
       }, generateSmile()),
-      share(),
-      tap(smile => render.updateSmile(smile)),
+      share()
     );
 
   const shootAt$ = click$.pipe(
@@ -60,21 +58,19 @@ export function run() {
     withLatestFrom(smile$),
     map(([shootAt, smile]) => killedSmile(smile, shootAt, SMILE_RADIUS)),
     filter(Boolean),
-    tap(() => console.log('killed')),
+    startWith(false),
   );
 
   const killedHappySmile$ = shootAt$.pipe(
     withLatestFrom(smile$),
     map(([shootAt, smile]) => killedSmile(smile, shootAt, SMILE_RADIUS) && smile.type === SmileType.Happy),
     filter(Boolean),
-    tap(() => console.log('killed happy smile'))
   );
 
   const killedSadSmile$ = shootAt$.pipe(
     withLatestFrom(smile$),
     map(([shootAt, smile]) => killedSmile(smile, shootAt, SMILE_RADIUS) && smile.type === SmileType.Unhappy),
     filter(Boolean),
-    tap(() => console.log('killed sad smile'))
   );
 
   const sadSmiles$ = smile$.pipe(
@@ -82,16 +78,20 @@ export function run() {
   );
 
   const missedSadSmile$ = killedSadSmile$.pipe(
+    startWith(true),
     buffer(sadSmiles$),
     filter(killes => !killes.some(Boolean)),
-    tap(() => console.log('missed smile'))
   );
 
-  const game$ = combineLatest(round$, smile$, killedSmile$, killedHappySmile$, missedSadSmile$)
-    .pipe(tap(([round, smile, killedSmile]) => {
+  const lives$ = merge(missedSadSmile$, killedHappySmile$).pipe(
+    scan(lives => lives - 1, LIVES),
+    startWith(LIVES),
+  );
+
+  const game$ = combineLatest(round$, smile$, killedSmile$, lives$)
+    .pipe(tap(([round, smile, killedSmile, lives]) => {
       render.updateSmile(smile);
-      render.updateText('killed');
-      render.updateLives(round);
+      render.updateLives(lives);
     }))
     .subscribe();
 
