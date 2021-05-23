@@ -1,19 +1,24 @@
 import { Subscription, merge, defer, combineLatest, concat, empty, fromEvent, of } from 'rxjs';
-import { throttleTime, share, buffer, delay, filter, map, mapTo, repeat, scan, startWith, tap, withLatestFrom } from 'rxjs/operators';
+import { delayWhen, concatAll, take, window, throttleTime, share, buffer, delay, filter, map, mapTo, repeat, scan, startWith, tap, withLatestFrom } from 'rxjs/operators';
 import { createPoint2D, createSmile, changeSmileVisible, generateSmileType, hideSmile, killedSmile, randomPosition } from './model';
 import { Renderer } from './Renderer';
+import { Sound } from './Sound';
+
 import { Smile, SmileType } from './types';
 
 const SMILE_RADIUS = 24;
 const SMILE_SHOW_TIME = 1000;
 const SMILE_HIDDEN_TIME = 2000;
-const RECHARGE_TIME = 3000;
+const RECHARGE_TIME = 2000;
 const LIVES = 3;
 
 const generateSmile = () => createSmile(randomPosition(), generateSmileType(), false);
 
 export function run() {
   const render = new Renderer(LIVES, RECHARGE_TIME);
+  render.homeScreen();
+  
+  const sound = new Sound();
 
   const mouse$ = fromEvent(document, 'mousemove')
     .pipe(
@@ -21,26 +26,21 @@ export function run() {
         const mouseEvent = event as MouseEvent;
         return createPoint2D(mouseEvent.pageX, mouseEvent.pageY);
       }),
-      startWith(createPoint2D(0, 0)),
       tap(position => render.updateTarget(position))
     );
-
+	
+  mouse$.subscribe();
+ 
   const click$ = fromEvent(document, 'click')
     .pipe(
       mapTo(true),
-      throttleTime(RECHARGE_TIME)
     );
-
 
   const smileVisible$ = concat(
     of(false).pipe(delay(SMILE_SHOW_TIME)),
     of(true).pipe(delay(SMILE_HIDDEN_TIME)),
   ).pipe(
     repeat(Infinity)
-  );
-
-  const round$ = smileVisible$.pipe(
-    scan((round, visible) => round + Number(visible), 0)
   );
   
   const smile$ = smileVisible$
@@ -53,10 +53,22 @@ export function run() {
     );
 
   const shootAt$ = click$.pipe(
+    throttleTime(RECHARGE_TIME),
     withLatestFrom(mouse$),
     map(([_, xy]) => xy),
+    tap(() => sound.shoot()),
     tap(() => render.updateShoot())
   );
+
+
+  const recharge$ = click$.pipe(
+    map(() => Date.now()),
+	withLatestFrom(shootAt$.pipe(map(() => Date.now()))),
+	map(([click, shoot]) => shoot - click),
+	filter(v => v < 0),
+    tap(() => sound.recharge())
+  );
+  
 
   const killedSmile$ = shootAt$.pipe(
     withLatestFrom(smile$),
@@ -69,6 +81,7 @@ export function run() {
     withLatestFrom(smile$),
     map(([shootAt, smile]) => killedSmile(smile, shootAt, SMILE_RADIUS) && smile.type === SmileType.Happy),
     filter(Boolean),
+    tap(() => sound.scream())
   );
 
 
@@ -76,6 +89,7 @@ export function run() {
     withLatestFrom(smile$),
     map(([shootAt, smile]) => killedSmile(smile, shootAt, SMILE_RADIUS) && smile.type === SmileType.Unhappy),
     filter(Boolean),
+    tap(() => sound.point())
   );
 
   const scores$ = killedSadSmile$.pipe(
@@ -91,6 +105,8 @@ export function run() {
     startWith(true),
     buffer(sadSmiles$),
     filter(killes => !killes.some(Boolean)),
+	tap(() => sound.scream()),
+	tap(() => console.log('missed'))
   );
 
   const lives$ = merge(missedSadSmile$, killedHappySmile$).pipe(
@@ -105,19 +121,32 @@ export function run() {
 
   let gameSubscription: Subscription;
 
-  const game$ = combineLatest(scores$, smile$, smileDead$, lives$)
-    .pipe(tap(([scores, smile, smileDead, lives]) => {
+  const game$ = combineLatest(scores$, smile$.pipe(startWith(generateSmile())), smileDead$, lives$)
+    .pipe(
+	tap(([scores, smile, smileDead, lives]) => {
       render.updateSmileDead(smileDead);
       render.updateScores(scores);
       render.updateSmile(smile);
       render.updateLives(lives);
       if (lives <= 0) {
+		sound.stopBackground();
+        sound.gameOver();
       	render.gameOver();
-	gameSubscription.unsubscribe();
+		gameSubscription.unsubscribe();
       }
-    }));
+  }));
 
-  gameSubscription = game$.subscribe();
+	   
+  click$.pipe(
+    take(1),
+    tap(() => {
+		gameSubscription = game$.subscribe();
+		recharge$.subscribe();
+		render.startGame();
+		sound.startBackground();
+		
+	})
+  ).subscribe();
 
   render.animate();
 }

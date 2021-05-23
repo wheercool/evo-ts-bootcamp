@@ -9,9 +9,11 @@ export class Renderer {
   private readonly uniforms: any;
   private readonly livesMessage: Text;
   private readonly scores: Text;
-  private readonly gameOverMessage: Text;
+  private readonly title: Text;
+  private readonly subtitle: Text;
 
   constructor(lives: number, private rechargeTime: number) {
+
     const container = document.getElementById('container')!;
     this.camera = new THREE.Camera();
     this.camera.position.z = 1;
@@ -27,11 +29,10 @@ export class Renderer {
     this.scores.font = './fonts/atma-v8-latin-regular.woff';
 
 
-    this.gameOverMessage = new Text();
-    this.gameOverMessage.fontSize = 0.4;
-    this.gameOverMessage.position.setX(-0.85);
-    this.gameOverMessage.position.setY(0.3);
-    this.gameOverMessage.font = './fonts/atma-v8-latin-regular.woff';
+    this.title = new Text();
+	this.subtitle = new Text();
+
+    this.title.font = './fonts/atma-v8-latin-regular.woff';
 
     this.livesMessage.font = './fonts/atma-v8-latin-regular.woff';
     this.livesMessage.fontSize = 0.05;
@@ -51,6 +52,7 @@ export class Renderer {
       u_recharged_at: { type: 'f', value: 0 },
       u_recharge_time: { type: 'f', value: rechargeTime }
     };
+	
     this.updateLives(this.uniforms.u_lives.value);
     const material = new THREE.ShaderMaterial({
       uniforms: this.uniforms,
@@ -62,11 +64,13 @@ export class Renderer {
     this.scene.add(mesh);
     this.livesMessage.sync();
     this.scores.sync();
-    this.gameOverMessage.sync();
+    this.title.sync();
+	this.subtitle.sync();
 
     this.scene.add(this.livesMessage);
     this.scene.add(this.scores);
-    this.scene.add(this.gameOverMessage);
+    this.scene.add(this.title);
+	this.scene.add(this.subtitle);
 
     this.renderer = new THREE.WebGLRenderer();
     this.renderer.setPixelRatio(window.devicePixelRatio);
@@ -124,8 +128,25 @@ export class Renderer {
   updateScores(scores: number) {
     this.scores.text = `Scores: ${scores.toString()}`; 
   }
+  homeScreen() {
+	this.title.fontSize = 0.2;
+    this.title.position.setX(-0.65);
+    this.title.position.setY(0.3);
+    this.title.text = `Kill sad smiles only.\n   Don't miss any`;
+	this.subtitle.fontSize = 0.05;
+	this.subtitle.position.setX(-0.25);
+    this.subtitle.position.setY(-0.4);
+	this.subtitle.text = 'Mouse click to start';
+  }
+  startGame() {
+    this.title.text = '';
+	this.subtitle.text = '';
+  }
   gameOver() {
-    this.gameOverMessage.text = 'Game Over';
+	this.title.fontSize = 0.4;
+    this.title.position.setX(-0.85);
+    this.title.position.setY(0.3);
+    this.title.text = 'Game Over';
   }
 }
 
