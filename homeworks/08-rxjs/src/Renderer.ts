@@ -12,9 +12,14 @@ export class Renderer {
   private readonly title: Text;
   private readonly subtitle: Text;
 
-  constructor(lives: number, private rechargeTime: number) {
+  constructor(
+    lives: number,
+    private rechargeTime: number,
+    positions: Point2D[],
+    smileRadius: number) {
 
     const container = document.getElementById('container')!;
+
     this.camera = new THREE.Camera();
     this.camera.position.z = 1;
 
@@ -25,12 +30,13 @@ export class Renderer {
 
     this.scores = new Text();
     this.scores.fontSize = 0.05;
+    this.scores.position.setX(0.6);
     this.scores.position.setY(0.98);
     this.scores.font = './fonts/atma-v8-latin-regular.woff';
 
 
     this.title = new Text();
-	this.subtitle = new Text();
+    this.subtitle = new Text();
 
     this.title.font = './fonts/atma-v8-latin-regular.woff';
 
@@ -50,9 +56,11 @@ export class Renderer {
       u_shoot: { type: 'b', value: false },
       u_lives: { type: 'n', value: lives },
       u_recharged_at: { type: 'f', value: 0 },
-      u_recharge_time: { type: 'f', value: rechargeTime }
+      u_recharge_time: { type: 'f', value: rechargeTime },
+      u_positions: { value: positions.map(point2D => new THREE.Vector2(point2D[0], point2D[1])) },
+      u_smile_radius: { type: 'f', value: smileRadius}
     };
-	
+
     this.updateLives(this.uniforms.u_lives.value);
     const material = new THREE.ShaderMaterial({
       uniforms: this.uniforms,
@@ -65,12 +73,12 @@ export class Renderer {
     this.livesMessage.sync();
     this.scores.sync();
     this.title.sync();
-	this.subtitle.sync();
+    this.subtitle.sync();
 
     this.scene.add(this.livesMessage);
     this.scene.add(this.scores);
     this.scene.add(this.title);
-	this.scene.add(this.subtitle);
+    this.scene.add(this.subtitle);
 
     this.renderer = new THREE.WebGLRenderer();
     this.renderer.setPixelRatio(window.devicePixelRatio);
@@ -125,28 +133,31 @@ export class Renderer {
     this.uniforms.u_lives.value = lives;
     this.livesMessage.text = `Lives: `;
   }
+
   updateScores(scores: number) {
-    this.scores.text = `Scores: ${scores.toString()}`; 
+    this.scores.text = `Scores: ${scores.toString()}`;
   }
+
   homeScreen() {
-	this.title.fontSize = 0.2;
+    this.title.fontSize = 0.2;
     this.title.position.setX(-0.65);
     this.title.position.setY(0.3);
     this.title.text = `Kill sad smiles only.\n   Don't miss any`;
-	this.subtitle.fontSize = 0.05;
-	this.subtitle.position.setX(-0.25);
+    this.subtitle.fontSize = 0.05;
+    this.subtitle.position.setX(-0.25);
     this.subtitle.position.setY(-0.4);
-	this.subtitle.text = 'Mouse click to start';
+    this.subtitle.text = 'Mouse click to start';
   }
+
   startGame() {
     this.title.text = '';
-	this.subtitle.text = '';
+    this.subtitle.text = '';
   }
+
   gameOver() {
-	this.title.fontSize = 0.4;
+    this.title.fontSize = 0.4;
     this.title.position.setX(-0.85);
     this.title.position.setY(0.3);
     this.title.text = 'Game Over';
   }
 }
-

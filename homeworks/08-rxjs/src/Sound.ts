@@ -1,42 +1,51 @@
 export class Sound {
-  private shootSound: HTMLAudioElement;
-  private screamSound: HTMLAudioElement;
-  private pointSound: HTMLAudioElement;
-  private gameOverSound: HTMLAudioElement;
-  private background: HTMLAudioElement;
+  private readonly shootSound: HTMLAudioElement;
+  private readonly screamSound: HTMLAudioElement;
+  private readonly pointSound: HTMLAudioElement;
+  private readonly gameOverSound: HTMLAudioElement;
+  private readonly background: HTMLAudioElement;
 
-  constructor() {
-	this.background = new Audio('sound/background.mp3');
-	this.background.loop = true;
+  constructor(private silent = false) {
+    this.background = new Audio('sound/background.mp3');
+    this.background.loop = true;
     this.gameOverSound = new Audio('sound/game-over-drop.wav');
     this.shootSound = new Audio('sound/shoot.wav');
     this.screamSound = new Audio('sound/scream.wav');
     this.pointSound = new Audio('sound/point.wav');
   }
 
-  startBackground() {
-	this.background.play();
+  private play(audio: HTMLAudioElement) {
+    if (!this.silent) {
+      audio.play();
+    }
   }
+
+  startBackground() {
+    this.play(this.background);
+  }
+
   stopBackground() {
     this.background.pause();
   }
+
   recharge() {
     const rechargeSound = new Audio('sound/recharge.wav');
-    rechargeSound.play();
+    this.play(rechargeSound);
   }
+
   gameOver() {
-    this.gameOverSound.play();
+    this.play(this.gameOverSound);
   }
+
   shoot() {
-    this.shootSound.play();
+    this.play(this.shootSound);
   }
 
   point() {
-    this.pointSound.play();
+    this.play(this.pointSound);
   }
 
   scream() {
-   this.screamSound.play();
+    this.play(this.screamSound);
   }
-
 }

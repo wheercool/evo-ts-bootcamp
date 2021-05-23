@@ -35,8 +35,12 @@
 
 
 
+
+
 </script>
 <script id="fragmentShader" type="x-shader/x-fragment">
+        #define POSITIONS_COUNT 6
+
         uniform vec2 u_resolution;
         uniform float u_time;
         uniform vec2 u_mouse;
@@ -48,6 +52,8 @@
         uniform bool u_killed_smile;
         uniform float u_recharged_at;
         uniform float u_recharge_time;
+        uniform float u_smile_radius;
+        uniform vec2 u_positions[POSITIONS_COUNT];
 
         float PI = 3.14;
         float plot(vec2 st, float pct){
@@ -82,12 +88,6 @@
            return v / u_resolution.x;
         }
 
-	float x_figure(vec2 st, vec2 center, float r) {
-	  vec2 p = st - center;
-	  float v = abs(p.x - p.y) / sqrt(2.0);
-	  return 1.0 - smoothstep(1.0, 1.001, v);
-
-	}
         float arc(vec2 st, vec2 center, float r, vec2 angle) {
             vec2 p = st - center;
             float d = length(p);
@@ -113,13 +113,13 @@
 
 
         vec3 smile(vec2 st, vec3 color, bool isHappy) {
-	    if (!isHappy && u_killed_smile) {
- 	      return color;
+            if (!isHappy && u_killed_smile) {
+              return color;
             }
             vec3 catColor = vec3(1.0, 1.0, 0.3);
             vec2 pos = u_target.xy / u_resolution.xy;
             pos.y = 1.0 - pos.y;
-            float r = absolute(24.0);
+            float r = absolute(u_smile_radius);
             float figure = circle(st, pos, r);
 
             color = paint(color, figure, catColor);
@@ -142,7 +142,6 @@
                     vec2 happy = vec2(0.0, PI);
                     figure = arc(st, pos - vec2(0.0, absoluteY(2.0)), absolute(12.0), happy);
                 }
-
             } else {
                 vec2 unhappy = vec2(PI, 2.0 * PI);
                 figure = arc(st, pos - vec2(0.0, absoluteY(12.0)), absolute(10.0), unhappy);
@@ -151,11 +150,61 @@
             return color;
         }
 
+        float dot2( in vec3 v ) { return dot(v,v); }
 
+        float udTriangle( in vec3 v1, in vec3 v2, in vec3 v3, in vec3 p )
+        {
+            vec3 v21 = v2 - v1; vec3 p1 = p - v1;
+            vec3 v32 = v3 - v2; vec3 p2 = p - v2;
+            vec3 v13 = v1 - v3; vec3 p3 = p - v3;
+            vec3 nor = cross( v21, v13 );
+
+            return sqrt( (sign(dot(cross(v21,nor),p1)) +
+                          sign(dot(cross(v32,nor),p2)) +
+                          sign(dot(cross(v13,nor),p3))<2.0)
+                          ?
+                          min( min(
+                          dot2(v21*clamp(dot(v21,p1)/dot2(v21),0.0,1.0)-p1),
+                          dot2(v32*clamp(dot(v32,p2)/dot2(v32),0.0,1.0)-p2) ),
+                          dot2(v13*clamp(dot(v13,p3)/dot2(v13),0.0,1.0)-p3) )
+                          :
+                          dot(nor,p1)*dot(nor,p1)/dot2(nor) );
+        }
+
+
+        vec3 house(vec2 st, vec3 color) {
+            vec3 c = vec3(0.785,0.590,0.259);
+            vec2 pos = vec2(0.5);
+            float figure = 0.0;
+
+            figure = hLine(st, pos, 0.35, 0.35);
+
+            color = paint(color, figure, c);
+
+            // vec3 tr_pos = vec3(st.xy - vec2(0.5), 0.0);
+            vec3 tr_pos = vec3(st.xy, 0.0);
+
+            float v = udTriangle(
+                vec3(0.5, 0.98, 0.0),
+                vec3(0.85, 0.85, 0.0),
+                vec3(0.15, 0.85, 0.0),
+                tr_pos
+            );
+            figure = smoothstep(0.001, 0.0001, v);
+            c = vec3(0.845,0.387,0.088);
+            color = paint(color, figure, c);
+
+            c = vec3(0.360,0.706,0.855);
+            for (int i = 0; i < POSITIONS_COUNT; i++) {
+                pos = u_positions[i];
+                figure = hLine(st, pos, absoluteY(80.0), absolute(80.0));
+                color = paint(color, figure, c);
+            }
+            return color;
+        }
         vec3 lives(vec2 st, vec3 color) {
            vec3 c = vec3(1.0, 0.0, 0.0);
-           // float r = absolute(10.0);
-	   float r = 0.005;	
+    	   float r = 0.005;
            float top = 0.97;
            float right = 1.0 - 2.0 * r;
            int n = 0;
@@ -179,6 +228,8 @@
             float figure = 0.0;
             vec2 pos = vec2(0.0);
 
+            color = house(st, color);
+
             /* smile */
             if (u_smile_visible) {
                color = smile(st, color, u_happy);
@@ -189,41 +240,44 @@
 
             color = lives(st, color);
 
-	    if (u_shoot) {
-	     color = vec3(1.0, color.gb);
-	    }
 
-		/* target */
-		r = absolute(20.0);
-		
-	    float delay = max(u_recharged_at - u_time, 0.0);
-	    float len = absolute(30.0);
-		float percent = delay / u_recharge_time;
-	    len =  len * percent;
-		percent = 1.0 - percent;
-		if (percent > 0.0 && percent < 0.2) {
-		  pos.y += pos.y * abs(sin(percent * 100.0) * (1.0 / (percent * 300.0)));
-		}
-		figure = circle(st, pos, r);
-		vec3 c = vec3(0.0, 0.0, 0.0);
-		vec3 restore = color;
-		color = paint(color, figure, c);
-		r = absolute(18.0);
-		figure = circle(st, pos, r);
-		color = paint(color, figure, restore);
+            if (u_shoot) {
+             color = vec3(1.0, color.gb);
+            }
 
-		figure = vLine(st, pos, absolute(0.5), absoluteY(25.0));
-		color = paint(color, figure, c);
+            /* target */
+            r = absolute(20.0);
 
-		figure = hLine(st, pos, absoluteY(1.0), absolute(25.0));
-		color = paint(color, figure, c);
+            float delay = max(u_recharged_at - u_time, 0.0);
+            float len = absolute(30.0);
+            float percent = delay / u_recharge_time;
+            len =  len * percent;
+            percent = 1.0 - percent;
+            if (percent > 0.0 && percent < 0.2) {
+              pos.y += pos.y * abs(sin(percent * 100.0) * (1.0 / (percent * 300.0)));
+            }
+            figure = circle(st, pos, r);
+            vec3 c = vec3(0.0, 0.0, 0.0);
+            vec3 restore = color;
+            color = paint(color, figure, c);
+            r = absolute(18.0);
+            figure = circle(st, pos, r);
+            color = paint(color, figure, restore);
 
-	    
-	    figure = hLine(st, pos - vec2(0.0, absoluteY(33.0)), absoluteY(3.0), len);
-	    color = paint(color, figure, vec3(0.8, 0.8, 0.8));
+            figure = vLine(st, pos, absolute(0.5), absoluteY(25.0));
+            color = paint(color, figure, c);
+
+            figure = hLine(st, pos, absoluteY(1.0), absolute(25.0));
+            color = paint(color, figure, c);
+
+
+            figure = hLine(st, pos - vec2(0.0, absoluteY(33.0)), absoluteY(3.0), len);
+            color = paint(color, figure, vec3(0.8, 0.8, 0.8));
 
             gl_FragColor=vec4(color,1.0);
         }
+
+
 
 
 

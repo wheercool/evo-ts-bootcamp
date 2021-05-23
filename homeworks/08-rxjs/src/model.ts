@@ -20,9 +20,7 @@ export function killedSmile(smile: Smile, hitAt: Point2D, radius: number) {
   return smile.visible && length(minus(hitAt, smile.position)) <= radius;
 }
 
-const positions: Point2D[] = [[0.25, 0.33], [0.25, 0.66], [0.5, 0.33], [0.5, 0.66], [0.75, 0.33], [0.75, 0.66]];
-
-export function randomPosition(): Point2D {
+export function randomPosition(positions: Point2D[]): Point2D {
   const rnd = Math.floor(Math.random() * positions.length);
   return mul(positions[rnd], createPoint2D(window.innerWidth, window.innerHeight));
 }
@@ -42,7 +40,7 @@ export function hideSmile(smile: Smile): Smile {
   }
 }
 
-export function changeSmileVisible(smile: Smile, visible: boolean): Smile {
+export function changeSmileVisibility(smile: Smile, visible: boolean): Smile {
   return {
     ...smile,
     visible
