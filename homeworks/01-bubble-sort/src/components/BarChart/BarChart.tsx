@@ -18,7 +18,6 @@ export class BarChart extends React.Component<IProps> {
       }
     </div>
   }
-
 }
 
 function percent(value: number, max: number) {

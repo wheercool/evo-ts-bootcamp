@@ -1,7 +1,7 @@
 import React from 'react';
 import './App.css';
 import { BarChart } from '../BarChart/BarChart';
-import { bubble, minElement } from '../../models/algorithms';
+import { bubble, minElement } from '../../algorithms';
 import { Algorithm, AlgorithmIteration, toAlgorithmIteration } from '../../models/AlgorithmIteration';
 import { Toolbar } from '../Toolbar/Toolbar';
 import { VisualizationStatus } from '../../models/VisualizationStatus';
@@ -24,7 +24,7 @@ const algorithms = {
 } as const;
 
 class App extends React.Component<{}, IState> {
-  private handle?: NodeJS.Timeout;
+  private timerId?: number;
 
   constructor(props: {}) {
     super(props);
@@ -61,29 +61,29 @@ class App extends React.Component<{}, IState> {
     );
   }
 
-  onStart = () => {
+  private onStart = () => {
     const generator = this.state.algorithm(this.state.values);
     this.setState({
       iterator: toAlgorithmIteration(generator)
     })
     this.clearTimer();
-    this.handle = setInterval(() => {
+    this.timerId = window.setInterval(() => {
       this.tick();
     }, REFRESH_TIME);
   }
-  onPause = () => {
-    clearInterval(this.handle!);
+  private onPause = () => {
+    clearInterval(this.timerId!);
     this.setState({
       status: VisualizationStatus.Waiting
     })
   }
-  onChangeAlgorithm = (algo: AlgorithmName) => {
+  private onChangeAlgorithm = (algorithmName: AlgorithmName) => {
     this.setState({
-      algorithmName: algo,
-      algorithm: algorithms[algo]
+      algorithmName: algorithmName,
+      algorithm: algorithms[algorithmName]
     })
   }
-  onRandomize = () => {
+  private onRandomize = () => {
     this.clearTimer();
     const newValues = generateArray(MAX_MEMBERS, MAX_VALUE);
     this.setState({
@@ -106,8 +106,9 @@ class App extends React.Component<{}, IState> {
       })
     }
   }
+
   private clearTimer = () => {
-    clearInterval(this.handle!);
+    clearInterval(this.timerId!);
   }
 }
 
