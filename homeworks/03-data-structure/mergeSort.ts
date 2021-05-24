@@ -1,17 +1,11 @@
-export enum CompareResult {
-  EQ = 0,
-  GT = 1,
-  LS = -1
-}
+export type Comparator<T> = (a: T, b: T) => number;
 
-export type Comparator<T> = (a: T, b: T) => CompareResult;
-
-export function mergeSort<V>(xs: V[], comparator: Comparator<V>): V[] {
-  const copy = xs.concat();
+export function mergeSort<V>(values: V[], comparator: Comparator<V>): V[] {
+  const copy = values.concat();
   if (copy.length <= 1) {
     return copy
   }
-  mergeSortRec(copy, comparator, 0, xs.length - 1);
+  mergeSortRec(copy, comparator, 0, values.length - 1);
   return copy;
 }
 
@@ -19,35 +13,35 @@ function mergeSortRec<V>(xs: V[], comparator: Comparator<V>, left: number, right
   if (left >= right) {
     return;
   }
-  const middle = ((right + left) / 2) | 0;
+  const middle = Math.floor((right + left) / 2);
   mergeSortRec(xs, comparator, left, middle)
   mergeSortRec(xs, comparator, middle + 1, right);
   merge(xs, comparator, left, middle, right);
 }
 
-function merge<V>(xs: V[], comparator: Comparator<V>, left: number, middle: number, right: number) {
-  const ls = [];
+function merge<V>(values: V[], comparator: Comparator<V>, left: number, middle: number, right: number) {
+  const leftValues = [];
   for (let i = left; i <= middle; i++) {
-    ls.push(xs[i]);
+    leftValues.push(values[i]);
   }
-  const rs = [];
+  const rightValues = [];
   for (let i = middle + 1; i <= right; i++) {
-    rs.push(xs[i]);
+    rightValues.push(values[i]);
   }
   let l = 0, r = 0, i = left;
-  while (ls.length > 0 && rs.length > 0) {
-    if (comparator(ls[l], rs[r]) === CompareResult.GT) {
-      xs[i] = rs.shift()!;
+  while (leftValues.length > 0 && rightValues.length > 0) {
+    if (comparator(leftValues[l], rightValues[r]) > 0) {
+      values[i] = rightValues.shift()!;
     } else {
-      xs[i] = ls.shift()!;
+      values[i] = leftValues.shift()!;
     }
     i++;
   }
-  while (ls.length > 0) {
-    xs[i++] = ls.shift()!;
+  while (leftValues.length > 0) {
+    values[i++] = leftValues.shift()!;
   }
-  while (rs.length > 0) {
-    xs[i++] = rs.shift()!;
+  while (rightValues.length > 0) {
+    values[i++] = rightValues.shift()!;
   }
 }
 

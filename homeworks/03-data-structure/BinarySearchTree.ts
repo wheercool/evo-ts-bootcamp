@@ -1,53 +1,51 @@
 import { IBinarySearchTree } from './IBinarySearchTree';
+import { BinaryTree } from './BinaryTree';
 import { IBinaryTree } from './IBinaryTree';
 
-export class BinarySearchTree implements IBinarySearchTree<number> {
-  left?: BinarySearchTree;
-  right?: BinarySearchTree;
+export class BinarySearchTree extends BinaryTree<number>
+  implements IBinarySearchTree<number> {
 
-  constructor(public value: number) {
-  }
-
-  static createTree(tree: IBinaryTree<number>): BinarySearchTree {
-    const result = new BinarySearchTree(tree.value);
-    if (tree.left) {
-      result.left = BinarySearchTree.createTree(tree.left);
-    }
-    if (tree.right) {
-      result.right = BinarySearchTree.createTree(tree.right);
-    }
-    return result;
-  }
-
-  insert(value: number) {
-    if (value < this.value) {
-      if (this.left) {
-        this.left.insert(value);
-      } else {
-        this.left = new BinarySearchTree(value);
-      }
-    } else {
-      if (this.right) {
-        this.right.insert(value);
-      } else {
-        this.right = new BinarySearchTree(value);
-      }
-    }
+  public insert(value: number): BinarySearchTree {
+    BinarySearchTree.insertInTree(value, this);
     return this;
   }
 
-  append(...values: number[]): BinarySearchTree {
+  public append(...values: number[]): BinarySearchTree {
     values.forEach(v => this.insert(v));
     return this;
   }
 
-  has(value: number): boolean {
-    if (value === this.value) {
+  public has(value: number): boolean {
+    return BinarySearchTree.hasInThree(value, this);
+  }
+
+  private static insertInTree(value: number, tree: IBinaryTree<number>) {
+    if (value < tree.value) {
+      if (tree.left) {
+        BinarySearchTree.insertInTree(value, tree.left);
+      } else {
+        tree.left = {
+          value
+        };
+      }
+    } else {
+      if (tree.right) {
+        BinarySearchTree.insertInTree(value, tree.right);
+      } else {
+        tree.right = {
+          value
+        }
+      }
+    }
+  }
+
+  private static hasInThree(value: number, tree: IBinaryTree<number>): boolean {
+    if (value === tree.value) {
       return true;
     }
-    if (value < this.value) {
-      return this.left ? this.left.has(value) : false;
+    if (value < tree.value) {
+      return tree.left ? BinarySearchTree.hasInThree(value, tree.left) : false;
     }
-    return this.right ? this.right.has(value) : false;
+    return tree.right ? BinarySearchTree.hasInThree(value, tree.right) : false;
   }
 }

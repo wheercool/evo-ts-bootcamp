@@ -8,36 +8,29 @@ export enum TraverseType {
 }
 
 export class BinaryTree<T> implements IBinaryTree<T> {
-  get left(): IBinaryTree<T> | undefined {
-    return this.tree.left;
+  public left: IBinaryTree<T> | undefined;
+  public right: IBinaryTree<T> | undefined;
+  public value!: T;
+
+  constructor(tree: IBinaryTree<T>) {
+    this.setTree(tree);
   }
 
-  get right(): IBinaryTree<T> | undefined {
-    return this.tree.right;
-  }
-
-  get value(): T {
-    return this.tree.value;
-  }
-
-  constructor(private tree: IBinaryTree<T>) {
-  }
-
-  traverse<V>(traverseType: TraverseType): T[] {
+  public traverse<V>(traverseType: TraverseType): T[] {
     switch (traverseType) {
       case TraverseType.InOrder:
-        return this.inOrderTraverse(this.tree);
+        return this.inOrderTraverse(this);
       case TraverseType.PreOrder:
-        return this.preOrderTraverse(this.tree);
+        return this.preOrderTraverse(this);
       case TraverseType.PostOrder:
-        return this.postOrderTraverse(this.tree);
+        return this.postOrderTraverse(this);
       case TraverseType.BFS:
-        return this.bfsTraverse(this.tree);
+        return this.bfsTraverse(this);
     }
   }
 
-  getColumn(columnOrder: number): T[] {
-    const q: [tree: IBinaryTree<T>, order: number][] = [[this.tree, 0]];
+  public getColumn(columnOrder: number): T[] {
+    const q: [tree: IBinaryTree<T>, order: number][] = [[this, 0]];
     const result: T[] = [];
     while (q.length) {
       const [next, order] = q.shift()!;
@@ -54,8 +47,10 @@ export class BinaryTree<T> implements IBinaryTree<T> {
     return result;
   }
 
-  setTree(tree: IBinaryTree<T>) {
-    this.tree = tree;
+  public setTree(tree: IBinaryTree<T>): void {
+    this.left = tree.left;
+    this.right = tree.right;
+    this.value = tree.value;
   }
 
   private inOrderTraverse(tree: IBinaryTree<T>): T[] {
@@ -76,7 +71,7 @@ export class BinaryTree<T> implements IBinaryTree<T> {
     return leftValues.concat(rightValues, [tree.value]);
   }
 
-  private bfsTraverse(tree: IBinaryTree<T>) {
+  private bfsTraverse(tree: IBinaryTree<T>): T[] {
     const q: IBinaryTree<T>[] = [tree];
     const result: T[] = [];
     while (q.length) {

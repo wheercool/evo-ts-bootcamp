@@ -1,12 +1,12 @@
-import { Comparator, CompareResult, mergeSort } from './mergeSort';
+import { Comparator, mergeSort } from './mergeSort';
 
 describe('mergeSort', () => {
   const comparator: Comparator<number> = (a: number, b: number) =>
     a > b
-      ? CompareResult.GT
+      ? 1
       : a == b
-      ? CompareResult.EQ
-      : CompareResult.LS;
+      ? 0
+      : -1
 
   it('should sort empty array', () => {
     expect(mergeSort([], comparator)).toEqual([])

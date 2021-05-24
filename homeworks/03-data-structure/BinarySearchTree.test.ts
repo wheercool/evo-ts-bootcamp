@@ -3,7 +3,7 @@ import { BinarySearchTree } from './BinarySearchTree';
 describe('BinarySearchTree', () => {
   describe('insert', () => {
     it('should build search tree', () => {
-      const tree = new BinarySearchTree(8);
+      const tree = new BinarySearchTree({ value: 8 });
       tree.append(3, 10, 1, 6, 14, 4, 7, 13);
 
       expect(tree).toEqual({
@@ -31,7 +31,7 @@ describe('BinarySearchTree', () => {
   describe('has', () => {
     let tree: BinarySearchTree;
     beforeEach(() => {
-      tree = BinarySearchTree.createTree({
+      tree = new BinarySearchTree({
         value: 8,
         left: {
           value: 3,
@@ -61,7 +61,7 @@ describe('BinarySearchTree', () => {
       expect(tree.has(9)).toEqual(false);
     })
     it('should return false if value is not in the tree (on right)', () => {
-     expect(tree.has(15)).toEqual(false);
+      expect(tree.has(15)).toEqual(false);
     })
   })
 })
