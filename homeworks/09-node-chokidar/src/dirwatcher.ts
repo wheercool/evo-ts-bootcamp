@@ -14,7 +14,6 @@ export class DirWatcher {
   watch(path: Path, delay: Delay) {
     let prevFiles: Path[] = [];
     (async () => {
-      prevFiles = await getDirectoryInfo(path);
       this.timerId = setInterval(async () => {
         const files = await getDirectoryInfo(path);
         const diffResult = diff(prevFiles, files);
@@ -37,7 +36,7 @@ function getDirectoryInfo(path: Path): Promise<Path[]> {
   return new Promise<Path[]>((resolve, reject) => {
     fs.readdir(path, (err, files) => {
       if (err) {
-        console.error(err);
+        reject(err);
         process.exit(1);
       }
       resolve(files.map(file => path + '/' + file));
