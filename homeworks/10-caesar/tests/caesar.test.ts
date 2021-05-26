@@ -1,5 +1,5 @@
 import { Readable, ReadableOptions, Writable } from 'stream';
-import { caeasar } from './caesar';
+import { caeasar } from '../src/caesar';
 
 class ReadableMemory extends Readable {
   private index: number;

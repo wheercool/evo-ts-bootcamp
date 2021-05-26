@@ -5,8 +5,12 @@
   "bin": {
     "caesar-cli": "./bin/caesar-cli.js"
   },
+  "files": [
+    "bin"
+  ],
   "scripts": {
     "install": "npm run build",
+    "dev": "ts-node src/caesar-cli.ts --help",
     "usage": "caesar-cli -h",
     "build": "tsc",
     "test": "jest"
