@@ -19,3 +19,5 @@ export enum GameStatus {
   Running = 'Running',
   Stopped = 'Stopped'
 }
+
+export type Figure = number;

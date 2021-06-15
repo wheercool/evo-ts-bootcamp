@@ -1,6 +1,19 @@
 import { Cells, Grid } from '../types';
-import { Simulator } from './Simulator';
+import { cellFromHash, hashCell, Simulator } from './Simulator';
 
+describe('Hash', () => {
+  it('should calculate hash', () => {
+    const hash = hashCell({ column: 1, row: 2 }, { columns: 3, rows: 3 });
+    expect(hash).toEqual(7);
+  })
+  it('should calculate cell from hash', () => {
+    const cell = cellFromHash(7, { columns: 3, rows: 3 });
+    expect(cell).toEqual({
+      column: 1,
+      row: 2
+    })
+  })
+})
 describe('Simulator', () => {
 
   let simulator: Simulator;

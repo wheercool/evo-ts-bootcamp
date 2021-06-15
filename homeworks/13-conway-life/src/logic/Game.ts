@@ -1,11 +1,16 @@
 import { Renderer } from './Renderer';
 import { Simulator } from './Simulator';
-import { GameState, GameStatus } from '../types';
+import { GameState, GameStatus, Grid } from '../types';
 import { Controller } from './Controller';
 import { GameInfo } from './GameInfo';
 import { action, computed, makeObservable, observable, toJS } from 'mobx';
+import { generateRandomField } from './Figure';
 
 const ONE_SECOND = 1000;
+const DEFAULT_GRID: Grid = {
+  columns: 80,
+  rows: 40
+};
 
 export class Game implements Controller, GameInfo {
   private rafHandle: number = -1;
@@ -13,15 +18,15 @@ export class Game implements Controller, GameInfo {
   private readonly SPEED_STEP = 5;
 
   @observable private state: GameState = {
-    cells: [],
     grid: {
-      columns: 40,
-      rows: 20
-    }
+      columns: DEFAULT_GRID.columns,
+      rows: DEFAULT_GRID.rows
+    },
+    cells: generateRandomField(DEFAULT_GRID)
   }
   @observable gameStatus: GameStatus = GameStatus.Stopped;
   @observable iteration: number = 0;
-  @observable speed = 5;
+  @observable speed = 15;
 
   @computed get totalCells(): number {
     return this.state.cells.length;
@@ -55,7 +60,8 @@ export class Game implements Controller, GameInfo {
 
   @action.bound nextStep() {
     this.iteration++;
-    this.state = this.simulator.nextState(this.state);
+    // Uses toJS for performance reason
+    this.state = this.simulator.nextState(toJS(this.state));
   }
 
   @action.bound changeColumns(value: number) {

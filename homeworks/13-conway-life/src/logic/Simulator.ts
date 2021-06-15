@@ -1,9 +1,16 @@
 import { Cell, Cells, GameState, Grid } from '../types';
 
-type Hash = string;
+type Hash = number;
 
-function hashCell(cell: Cell): Hash {
-  return `${cell.column}x${cell.row}`;
+export function hashCell(cell: Cell, grid: Grid): Hash {
+  return cell.row * grid.columns + cell.column;
+}
+
+export function cellFromHash(hash: Hash, grid: Grid): Cell {
+  return {
+    row: Math.floor(hash / grid.columns),
+    column: hash % grid.columns
+  };
 }
 
 function boundTo(value: number, min: number, max: number) {
@@ -71,7 +78,7 @@ export class Simulator {
         const column = boundTo(cell.column + x, 0, grid.columns);
         const row = boundTo(cell.row + y, 0, grid.rows);
         const candidate = { column, row };
-        const hash = hashCell(candidate)
+        const hash = hashCell(candidate, grid)
         if (!visited.has(hash)) {
           visited.add(hash);
           candidates.push(candidate);
