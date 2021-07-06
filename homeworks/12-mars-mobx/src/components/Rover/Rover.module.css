@@ -1,0 +1,22 @@
+.rover {
+  color: saddlebrown;
+  width: 350px;
+  padding: 10px;
+  border: 2px solid darkslategray;
+  background-color: white;
+  cursor: pointer;
+}
+
+.roverActive {
+  background-color: #834e37;
+  color: white;
+  transform: scale(1.1);
+}
+
+.rover header {
+  text-align: center;
+  margin-bottom: 10px;
+}
+.rover img {
+  max-width: 100%;
+}
