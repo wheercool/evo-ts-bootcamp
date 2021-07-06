@@ -1,0 +1,12 @@
+.camera {
+  padding: 5px 10px;
+  color: #454545;
+}
+.camera + .camera {
+  margin-left: 10px;
+}
+
+.cameraActive {
+  color: white;
+  background: #454545;
+}
