@@ -1,0 +1,187 @@
+html, body {
+  margin: 0;
+  bottom: 0;
+  position: relative;
+}
+
+.wall {
+  background: #f4d5a7;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 85%;
+  right: 0;
+}
+
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+h1 {
+  color: #f4d5a7;
+  font-size: 10vh;
+  margin-bottom: 6vh;
+  animation: 2s enter-text ease-in-out;
+}
+
+@keyframes enter-text {
+  0% {
+    opacity: 0;
+    clip-path: circle(5%);
+  }
+  100% {
+    opacity: 1;
+    clip-path: circle(100%);
+  }
+}
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.spinner {
+  opacity: 0;
+  width: 20%;
+  height: 20%;
+  --hex-time: 0.2s;
+  animation: 2s enter-spinner forwards;
+  animation-delay: 1s;
+}
+@keyframes enter-spinner {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+#hex_1, #hex_2, #hex_3, #hex_4, #hex_5, #hex_6, #hex_7 {
+  opacity: 0;
+  transform-box: fill-box;
+  animation: calc(var(--hex-time) * 16) flash infinite ease;
+  transform-origin: center;
+}
+
+/*Hexes*/
+#hex_1 {
+}
+
+#hex_2 {
+  animation-delay: calc(var(--hex-time) * 1);
+}
+
+#hex_3 {
+  animation-delay: calc(var(--hex-time) * 2);
+}
+
+#hex_4 {
+  animation-delay: calc(var(--hex-time) * 3);
+}
+
+#hex_5 {
+  animation-delay: calc(var(--hex-time) * 4);
+}
+
+#hex_6 {
+  animation-delay: calc(var(--hex-time) * 5);
+}
+
+#hex_7 {
+  animation-delay: calc(var(--hex-time) * 6);
+}
+
+@keyframes flash {
+  0% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  6.25% {
+    opacity: 1;
+    transform: scale(1.0);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.0);
+  }
+  56.25% {
+    opacity: 0.2;
+    transform: scale(0);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0);
+  }
+}
+
+/*First orbit*/
+
+#first_orbit_slice {
+  transform-origin: center;
+  stroke-dasharray: 6817;
+  stroke-dashoffset: 6200;
+  animation: 3s first-orbit-slice infinite linear;
+}
+
+#first_orbit_spinner {
+  --max-cut-size: 6817;
+  --inverse-max-cut-size: -6817;
+  --min-cut-size: 1000;
+  stroke-dasharray: var(--max-cut-size);
+  transform-origin: center;
+  animation: 3s stretch infinite linear;
+}
+
+@keyframes first-orbit-slice {
+  0% {
+    transform: rotate(135deg);
+  }
+  50% {
+    transform: rotate(315deg);
+  }
+
+  100% {
+    transform: rotate(495deg);
+  }
+}
+
+@keyframes stretch {
+  0% {
+    transform: rotate(-135deg);
+    stroke-dashoffset: 0;
+  }
+  50% {
+    transform: rotate(-45deg);
+    stroke-dashoffset: var(--inverse-max-cut-size);
+  }
+  50.00001% {
+    stroke-dashoffset: var(--max-cut-size);
+  }
+  75% {
+    stroke-dashoffset: 0;
+    transform: rotate(135deg);
+  }
+  100% {
+    transform: rotate(360deg);
+    stroke-dashoffset: 0;
+  }
+}
+
+/*Second orbit*/
+#second_orbit_1 {
+  animation: 3s spinning infinite ease;
+  transform-origin: center;
+}
+
+@keyframes spinning {
+  0% {
+    transform: rotate(-90deg);
+  }
+  100% {
+    transform: rotate(-450deg);
+  }
+}
