@@ -1,0 +1,36 @@
+.panel {
+  text-align: center;
+  padding: 20px;
+}
+.help {
+  font-style: italic;
+}
+.fieldset {
+  margin-bottom: 20px;
+}
+.field {
+  display: flex;
+  margin-bottom: 10px;
+}
+
+.field label {
+  margin-right: auto;
+}
+
+.buttons {
+  display: flex;
+}
+.buttons button {
+  padding: 5px 7px;
+  margin: 2px;
+  color: #454545;
+  font-weight: bold;
+}
+
+.buttons > button:first-child {
+  margin-left: auto;
+}
+
+.speedControl button {
+  margin: 5px;
+}
